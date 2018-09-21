@@ -1,3 +1,4 @@
+import Emittery from "emittery";
 export interface ObservableLike {
 	subscribe(observer: (value: any) => void): void;
 }
@@ -747,3 +748,178 @@ export const skip: SkipInterface;
 
 /** Declare a test that should be implemented later. */
 export const todo: TodoDeclaration;
+
+export interface AvaFiles {
+	extentions: string[];
+	files: string[];
+	extensionPatter: string;
+	excludePatters: string[];
+	sources: string[];
+	cwd: string;
+	globalCaches: {
+		cache: {[key:string]:any};
+		statCache: {[key:string]:any};
+		realpathCache: {[key:string]:any};
+		symlinks: {[key:string]:any};
+	}
+}
+
+export interface RunStats {
+	byFile:Map<string, any>;
+	declaredTests: number;
+  failedHooks: number;
+  failedTests: number;
+  failedWorkers: number;
+  files:AvaFiles;
+  parallelRuns:{currentIndex:number, totalRuns:number};
+  finishedWorkers: number;
+  internalErrors: number;
+  remainingTests: number;
+  passedKnownFailingTests: number;
+  passedTests: number;
+  selectedTests: number;
+  skippedTests: number;
+  timeouts: number;
+  todoTests: number;
+  uncaughtExceptions: number;
+	unhandledRejections: number;
+}
+
+
+export interface RunStatusStatsEvent {
+	type:'stats';
+	stats:RunStats;
+}
+
+export interface RunStatusWorkerStdoutEvent {
+	type: 'worker-stdout';
+	chunk: Buffer;
+	testFile: string;
+}
+
+export interface RunStatusWorkerStderrEvent {
+	type: 'worker-stderr';
+	chunk: Buffer;
+	testFile: string;
+}
+
+export interface RunStatusWorkerFinishedEvent {
+	type: 'worker-finished';
+	forcedExit: boolean;
+	testFile: string;
+}
+
+export interface RunStatusWorkerFailedEvent {
+	type: 'worker-failed';
+	nonZeroExitCode?: string | number;
+	signal?: string | number;
+	testFile: string;
+	err?: Error;
+}
+
+export interface RunStatusInternalErrorEvent {
+	type: 'internal-error';
+	err: SeriliazedError;
+}
+
+export interface RunStatusDeclaredTestEvent {
+	type: 'declared-test',
+	title: string;
+	knownFailing: boolean;
+	todo: boolean;
+}
+
+export interface RunStatusSelectedTestEvent {
+	type: 'selected-test',
+	title: string;
+	knownFailing: boolean;
+	skip: boolean;
+	todo: boolean;
+}
+
+export interface RunStatusHookFailedEvent {
+	type: 'hook-failed',
+	title: string;
+	err: SeriliazedError;
+	duration: number;
+	logs: string[];
+}
+
+export interface RunStatusTestFailedEvent {
+	type: 'test-failed',
+	title: string;
+	err: SeriliazedError;
+	duration: number;
+	logs: string[];
+	knownFailing: boolean;
+}
+
+export interface RunStatusTestPassedEvent {
+	type: 'test-passed',
+	title: string;
+	duration: number;
+	logs: string[];
+	knownFailing: boolean;
+}
+
+export interface RunStatusTestTimeoutEvent {
+	type: 'timeout';
+}
+
+export interface RunStatusUncaughtExceptionEvent {
+	type: 'uncaught-exception';
+	err: SeriliazedError;
+}
+
+export interface RunStatusUnhandledRejectionEvent {
+	type: 'unhandled-rejection';
+	err: SeriliazedError;
+}
+
+export type RunStatusEvent = RunStatusStatsEvent |
+RunStatusWorkerStdoutEvent |  
+RunStatusWorkerStderrEvent | 
+RunStatusWorkerFinishedEvent | 
+RunStatusWorkerFailedEvent | 
+RunStatusInternalErrorEvent | 
+RunStatusDeclaredTestEvent | 
+RunStatusSelectedTestEvent | 
+RunStatusHookFailedEvent | 
+RunStatusTestFailedEvent | 
+RunStatusTestPassedEvent | 
+RunStatusTestTimeoutEvent | 
+RunStatusUncaughtExceptionEvent | 
+RunStatusUnhandledRejectionEvent 
+
+
+export interface SeriliazedError {
+	avaAssertionError: boolean;
+	nonErrorObject?: boolean;
+	formatted?: string;
+	name?:string;
+	message?:string;
+	stack?:string;
+	summary?:string;
+	improperUsage?:any;
+}
+
+export interface RunStatus extends Emittery {
+	stats:RunStats;
+	on(event: "stateChanged", listener: (evt:RunStatusEvent) => void): Emittery.UnsubscribeFn;
+}
+
+export interface RunPlan {
+	clearLogOnNextRun: boolean;
+	failFastEnabled: boolean;
+	filePathPrefix: string;
+	files:any[]
+	matching: boolean;
+	previousFailures: number;
+	runOnlyExclusive: boolean;
+	runVector: number;
+	status: RunStatus
+}
+
+export interface Api extends Emittery {
+	on(event: "run", listener: (runPlan: RunPlan) => void): Emittery.UnsubscribeFn;
+}
