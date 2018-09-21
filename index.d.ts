@@ -1,4 +1,4 @@
-import Emittery from "emittery";
+import * as Emittery from "emittery";
 export interface ObservableLike {
 	subscribe(observer: (value: any) => void): void;
 }
@@ -922,4 +922,10 @@ export interface RunPlan {
 
 export interface Api extends Emittery {
 	on(event: "run", listener: (runPlan: RunPlan) => void): Emittery.UnsubscribeFn;
+}
+
+export interface Hook {
+	onStateChange(evt:RunStatusEvent): any;
+	startRun() :any;
+	endRun() :any;
 }
