@@ -757,162 +757,183 @@ export interface AvaFiles {
 	sources: string[];
 	cwd: string;
 	globalCaches: {
-		cache: {[key:string]:any};
-		statCache: {[key:string]:any};
-		realpathCache: {[key:string]:any};
-		symlinks: {[key:string]:any};
+		cache: { [key: string]: any };
+		statCache: { [key: string]: any };
+		realpathCache: { [key: string]: any };
+		symlinks: { [key: string]: any };
 	}
 }
 
 export interface RunStats {
-	byFile:Map<string, any>;
+	byFile: Map<string, RunStats>;
 	declaredTests: number;
-  failedHooks: number;
-  failedTests: number;
-  failedWorkers: number;
-  files:AvaFiles;
-  parallelRuns:{currentIndex:number, totalRuns:number};
-  finishedWorkers: number;
-  internalErrors: number;
-  remainingTests: number;
-  passedKnownFailingTests: number;
-  passedTests: number;
-  selectedTests: number;
-  skippedTests: number;
-  timeouts: number;
-  todoTests: number;
-  uncaughtExceptions: number;
+	failedHooks: number;
+	failedTests: number;
+	failedWorkers: number;
+	files: AvaFiles;
+	parallelRuns: { currentIndex: number, totalRuns: number };
+	finishedWorkers: number;
+	internalErrors: number;
+	remainingTests: number;
+	passedKnownFailingTests: number;
+	passedTests: number;
+	selectedTests: number;
+	skippedTests: number;
+	timeouts: number;
+	todoTests: number;
+	uncaughtExceptions: number;
 	unhandledRejections: number;
 }
 
-
-export interface RunStatusStatsEvent {
-	type:'stats';
-	stats:RunStats;
+export interface RunStatusBaseEvent {
+	type: string;
+	testFile?: string;
+	logs?: string[];
 }
 
-export interface RunStatusWorkerStdoutEvent {
+export interface RunStatusStatsEvent extends RunStatusBaseEvent {
+	type: 'stats';
+	stats: RunStats;
+}
+
+export interface RunStatusWorkerStdoutEvent extends RunStatusBaseEvent {
 	type: 'worker-stdout';
 	chunk: Buffer;
 	testFile: string;
 }
 
-export interface RunStatusWorkerStderrEvent {
+export interface RunStatusWorkerStderrEvent extends RunStatusBaseEvent {
 	type: 'worker-stderr';
 	chunk: Buffer;
 	testFile: string;
 }
 
-export interface RunStatusWorkerFinishedEvent {
+export interface RunStatusWorkerFinishedEvent extends RunStatusBaseEvent {
 	type: 'worker-finished';
 	forcedExit: boolean;
 	testFile: string;
 }
 
-export interface RunStatusWorkerFailedEvent {
+export interface RunStatusWorkerFailedEvent extends RunStatusBaseEvent {
 	type: 'worker-failed';
 	nonZeroExitCode?: string | number;
 	signal?: string | number;
 	testFile: string;
-	err?: Error;
+	err?: SeriliazedError;
 }
 
-export interface RunStatusInternalErrorEvent {
+export interface RunStatusInternalErrorEvent extends RunStatusBaseEvent {
 	type: 'internal-error';
 	err: SeriliazedError;
+	logs?: string[];
 }
 
-export interface RunStatusDeclaredTestEvent {
+export interface RunStatusDeclaredTestEvent extends RunStatusBaseEvent {
 	type: 'declared-test',
 	title: string;
 	knownFailing: boolean;
 	todo: boolean;
+	testFile: string;
 }
 
-export interface RunStatusSelectedTestEvent {
+export interface RunStatusSelectedTestEvent extends RunStatusBaseEvent {
 	type: 'selected-test',
 	title: string;
 	knownFailing: boolean;
 	skip: boolean;
 	todo: boolean;
+	testFile: string;
 }
 
-export interface RunStatusHookFailedEvent {
+export interface RunStatusHookFailedEvent extends RunStatusBaseEvent {
 	type: 'hook-failed',
 	title: string;
 	err: SeriliazedError;
 	duration: number;
 	logs: string[];
+	testFile: string;
 }
 
-export interface RunStatusTestFailedEvent {
+export interface RunStatusTestFailedEvent extends RunStatusBaseEvent {
 	type: 'test-failed',
 	title: string;
 	err: SeriliazedError;
 	duration: number;
 	logs: string[];
 	knownFailing: boolean;
+	testFile: string;
 }
 
-export interface RunStatusTestPassedEvent {
+export interface RunStatusTestPassedEvent extends RunStatusBaseEvent {
 	type: 'test-passed',
 	title: string;
 	duration: number;
 	logs: string[];
 	knownFailing: boolean;
+	testFile: string;
 }
 
-export interface RunStatusTestTimeoutEvent {
+export interface RunStatusTestTimeoutEvent extends RunStatusBaseEvent {
 	type: 'timeout';
+	testFile: string;
+	period: number;
 }
 
-export interface RunStatusUncaughtExceptionEvent {
+export interface RunStatusUncaughtExceptionEvent extends RunStatusBaseEvent {
 	type: 'uncaught-exception';
 	err: SeriliazedError;
+	testFile: string;
 }
 
-export interface RunStatusUnhandledRejectionEvent {
+export interface RunStatusUnhandledRejectionEvent extends RunStatusBaseEvent {
 	type: 'unhandled-rejection';
 	err: SeriliazedError;
+	testFile: string;
+}
+
+export interface RunStatusMissingAvaImport extends RunStatusBaseEvent {
+	type: 'missing-ava-import';
+	testFile: string;
 }
 
 export type RunStatusEvent = RunStatusStatsEvent |
-RunStatusWorkerStdoutEvent |  
-RunStatusWorkerStderrEvent | 
-RunStatusWorkerFinishedEvent | 
-RunStatusWorkerFailedEvent | 
-RunStatusInternalErrorEvent | 
-RunStatusDeclaredTestEvent | 
-RunStatusSelectedTestEvent | 
-RunStatusHookFailedEvent | 
-RunStatusTestFailedEvent | 
-RunStatusTestPassedEvent | 
-RunStatusTestTimeoutEvent | 
-RunStatusUncaughtExceptionEvent | 
-RunStatusUnhandledRejectionEvent 
+	RunStatusWorkerStdoutEvent |
+	RunStatusWorkerStderrEvent |
+	RunStatusWorkerFinishedEvent |
+	RunStatusWorkerFailedEvent |
+	RunStatusInternalErrorEvent |
+	RunStatusDeclaredTestEvent |
+	RunStatusSelectedTestEvent |
+	RunStatusHookFailedEvent |
+	RunStatusTestFailedEvent |
+	RunStatusTestPassedEvent |
+	RunStatusTestTimeoutEvent |
+	RunStatusUncaughtExceptionEvent |
+	RunStatusUnhandledRejectionEvent |
+	RunStatusMissingAvaImport;
 
 
 export interface SeriliazedError {
 	avaAssertionError: boolean;
 	nonErrorObject?: boolean;
 	formatted?: string;
-	name?:string;
-	message?:string;
-	stack?:string;
-	summary?:string;
-	improperUsage?:any;
+	name?: string;
+	message?: string;
+	stack?: string;
+	summary?: string;
+	improperUsage?: any;
 }
 
 export interface RunStatus extends Emittery {
-	stats:RunStats;
-	on(event: "stateChanged", listener: (evt:RunStatusEvent) => void): Emittery.UnsubscribeFn;
+	stats: RunStats;
+	on(event: "stateChanged", listener: (evt: RunStatusEvent) => void): Emittery.UnsubscribeFn;
 }
 
 export interface RunPlan {
 	clearLogOnNextRun: boolean;
 	failFastEnabled: boolean;
 	filePathPrefix: string;
-	files:any[]
+	files: any[]
 	matching: boolean;
 	previousFailures: number;
 	runOnlyExclusive: boolean;
@@ -925,7 +946,7 @@ export interface Api extends Emittery {
 }
 
 export interface Hook {
-	onStateChange(evt:RunStatusEvent): any;
-	startRun() :any;
-	endRun() :any;
+	onStateChange(evt: RunStatusEvent): any;
+	startRun(plan: RunPlan): any;
+	endRun(): any;
 }
